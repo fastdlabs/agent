@@ -1,6 +1,6 @@
 # agent
 
-FastD Sentinel Agent
+FastD Sentinel Agent 的原理参考数据采集，仅需要部署一个脚本到服务器，操作的方式与composer一样，然后 agent 会与注册中心进行通信，实时更新服务节点信息。
 
 ### Support
 
