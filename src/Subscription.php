@@ -33,14 +33,14 @@ class Subscription extends Client
         parent::__construct($uri, true);
     }
 
-    public function onError(swoole_client $client)
+    public function tryReconnect()
     {
-        $this->tryReconnect();
-    }
-
-    public function onConnect(swoole_client $client)
-    {
-        $this->try_count = 0;
+        if ($this->try_count <= $this->max_try_count) {
+            echo 'try connecting: ' . $this->try_count.PHP_EOL;
+            $this->connect();
+            $this->try_count++;
+            sleep(1);
+        }
     }
 
     /**
@@ -58,19 +58,28 @@ class Subscription extends Client
         echo "接收信息: ".$nodes.PHP_EOL;
     }
 
-    public function tryReconnect()
+    /**
+     * @param swoole_client $client
+     * @return mixed
+     */
+    public function onError(swoole_client $client)
     {
-        if ($this->try_count <= $this->max_try_count) {
-            echo 'try connecting: ' . $this->try_count.PHP_EOL;
-            $this->connect();
-            $this->try_count++;
-            sleep(1);
-        }
+        $this->tryReconnect();
     }
 
     /**
      * @param swoole_client $client
-     * @return mixed|void
+     * @return mixed
+     */
+    public function onConnect(swoole_client $client)
+    {
+        $client->send('agent');
+        $this->try_count = 0;
+    }
+
+    /**
+     * @param swoole_client $client
+     * @return mixed
      */
     public function onClose(swoole_client $client)
     {
