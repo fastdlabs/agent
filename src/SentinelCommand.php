@@ -28,7 +28,7 @@ class SentinelCommand extends Command
     {
         $this->setName(static::COMMAND_NAME);
         $this
-            ->addArgument('url', InputArgument::OPTIONAL)
+            ->addArgument('url', InputArgument::REQUIRED)
             ->addOption('conf', '-c', InputOption::VALUE_OPTIONAL)
             ->addOption('daemon', '-d', InputOption::VALUE_OPTIONAL)
         ;
