@@ -9,7 +9,6 @@
 
 namespace FastD\Sentinel;
 
-
 use FastD\Swoole\Process;
 use swoole_process;
 use Symfony\Component\Console\Input\InputInterface;
@@ -40,7 +39,7 @@ class Agent extends Process
         }
 
         if ($input->hasParameterOption(['--conf', '-c'])) {
-
+            $this->config = $input->getArgument('url');
         }
 
         if ($input->hasParameterOption(['--daemon', '-d'])) {

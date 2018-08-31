@@ -9,7 +9,10 @@
 
 namespace FastD\Sentinel;
 
-
+/**
+ * Interface SentinelInterface
+ * @package FastD\Sentinel
+ */
 interface SentinelInterface
 {
     const PATH = '/tmp/services';
