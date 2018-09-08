@@ -21,6 +21,7 @@ use swoole_client;
 class Subscription extends Client
 {
     protected $try_count = 0;
+    protected $send_count = 0;
     protected $max_try_count = 10;
 
     /**
@@ -88,12 +89,20 @@ class Subscription extends Client
 
         sleep(5);
         timer_tick(5000, function ($id) use ($client) {
-            if ($this->client->isConnected() && false !== $client->send(Json::encode([
-                    'method' => 'HEAD',
-                    'path' => '/heart-beats',
-                ]))) {
-                $this->try_count = 0;
-            } else {
+            try {
+                if (!$this->client->isConnected()) {
+                    echo 'unconnected', PHP_EOL;
+                    timer_clear($id);
+                } elseif (false === $client->send(Json::encode([
+                        'method' => 'HEAD',
+                        'path' => '/heart-beats',
+                    ]))) {
+                    echo 'error', PHP_EOL;
+
+                    timer_clear($id);
+                }
+            }catch (\Exception $exception) {
+                echo $exception->getMessage(),PHP_EOL,'异常',PHP_EOL;
                 timer_clear($id);
             }
         });
