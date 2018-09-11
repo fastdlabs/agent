@@ -92,6 +92,7 @@ class Subscription extends Client
             try {
                 if (!$this->client->isConnected()) {
                     echo 'unconnected', PHP_EOL;
+
                     timer_clear($id);
                 } elseif (false === $client->send(Json::encode([
                         'method' => 'HEAD',
@@ -103,6 +104,7 @@ class Subscription extends Client
                 }
             }catch (\Exception $exception) {
                 echo $exception->getMessage(),PHP_EOL,'异常',PHP_EOL;
+
                 timer_clear($id);
             }
         });
