@@ -21,8 +21,6 @@ class StopCommand extends Command
 {
     const COMMAND_NAME = 'stop';
 
-    protected $path;
-
     public function configure()
     {
         $this->setName(static::COMMAND_NAME);
@@ -37,14 +35,14 @@ class StopCommand extends Command
     public function execute(InputInterface $input, OutputInterface $output)
     {
         if ($input->hasParameterOption(['--path', '-p'])) {
-            $this->path = $input->getOption('path');
+            $path = $input->getOption('path');
         } else {
-            $this->path = SentinelInterface::PATH;
+            $path = SentinelInterface::PATH;
         }
 
-        $pid = (int) @file_get_contents($path);
+        $pid = (int)@file_get_contents($path);
         if (process_kill($pid, SIGTERM)) {
-            unlink($this->pidFile);
+            unlink($path);
         }
 
         $output->writeln("<info></info>");
