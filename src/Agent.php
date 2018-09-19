@@ -15,13 +15,19 @@ use Symfony\Component\Console\Input\InputInterface;
 
 class Agent extends Process
 {
-    const PROCESS_NAME = 'sentinel agent';
+    const PROCESS_NAME = 'sentinel-agent';
+
+    const AGENT_VERSION = '0.0.1-beta';
 
     protected $input;
 
     protected $url;
 
     protected $config;
+
+    protected $path;
+
+    protected $list = false;
 
     public function __construct(InputInterface $input, $redirect = false, $pipe = true)
     {
@@ -38,8 +44,12 @@ class Agent extends Process
             $this->url = $input->getArgument('url');
         }
 
-        if ($input->hasParameterOption(['--conf', '-c'])) {
-            $this->config = $input->getArgument('url');
+        if ($input->hasParameterOption(['--list', '-l'])) {
+            $this->list = true;
+        }
+
+        if ($input->hasParameterOption(['--path', '-p'])) {
+            $this->path = $input->getOption('path');
         }
 
         if ($input->hasParameterOption(['--daemon', '-d'])) {
@@ -49,7 +59,7 @@ class Agent extends Process
 
     public function handle(swoole_process $swoole_process)
     {
-        $subscript = new Subscription($this->url);
+        $subscript = new Subscription($this->url, $this->path, $this->list);
 
         $subscript->start();
     }

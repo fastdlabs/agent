@@ -1,4 +1,5 @@
-<?php
+<?php /** @noinspection ALL */
+
 /**
  * @author    jan huang <bboyjanhuang@gmail.com>
  * @copyright 2018
@@ -24,13 +25,22 @@ class Subscription extends Client
     protected $send_count = 0;
     protected $max_try_count = 10;
 
+    protected $nodes = [];
+
+    protected $path;
+
+    protected $list;
+
     /**
      * Subscription constructor.
      * @param $uri
      */
-    public function __construct($uri)
+    public function __construct($uri, $path = null, $list = false)
     {
         parent::__construct($uri, true);
+
+        $this->list = $list;
+        $this->path = is_null($path) ? SentinelInterface::PATH : $path;
     }
 
     public function tryReconnect()
@@ -58,9 +68,22 @@ class Subscription extends Client
     public function onReceive(swoole_client $client, $data)
     {
         $data = json_decode($data, true);
+
         if (!empty($data)) {
             foreach ($data as $name => $nodes) {
-                $file = new FileObject(SentinelInterface::PATH . '/' . $name . '.php', 'rw+');
+                echo $name, PHP_EOL, PHP_EOL;
+                if (empty($nodes)) {
+                    try {
+                        unlink($this->path . '/' . $name . '.php');
+                        continue;
+                    } catch (\Exception $exception) {
+                        echo "unlink $name failed:{$exception->getMessage()}";
+                    }
+                }
+
+                is_null($this->nodes) && $this->setNode($name, $nodes);
+
+                $file = new FileObject($this->path . '/' . $name . '.php', 'rw+');
                 $file->ftruncate(0);
                 $file->fwrite('<?php return ' . var_export($nodes, true) . ';');
             }
@@ -77,7 +100,6 @@ class Subscription extends Client
 
     /**
      * @param swoole_client $client
-     * @return mixed|void
      * @throws \FastD\Packet\Exceptions\PacketException
      */
     public function onConnect(swoole_client $client)
@@ -87,24 +109,23 @@ class Subscription extends Client
             'path' => '/services',
         ]));
 
+        $this->try_count = 0;
+
         sleep(5);
         timer_tick(5000, function ($id) use ($client) {
             try {
                 if (!$this->client->isConnected()) {
                     echo 'unconnected', PHP_EOL;
-
                     timer_clear($id);
                 } elseif (false === $client->send(Json::encode([
                         'method' => 'HEAD',
                         'path' => '/heart-beats',
                     ]))) {
                     echo 'error', PHP_EOL;
-
                     timer_clear($id);
                 }
-            }catch (\Exception $exception) {
-                echo $exception->getMessage(),PHP_EOL,'异常',PHP_EOL;
-
+            } catch (\Exception $exception) {
+                echo $exception->getMessage(), PHP_EOL, '异常', PHP_EOL;
                 timer_clear($id);
             }
         });
@@ -116,5 +137,24 @@ class Subscription extends Client
     public function onClose(swoole_client $client)
     {
         $this->tryReconnect();
+    }
+
+    /**
+     * @return array
+     */
+    public function getNodes()
+    {
+        return $this->nodes;
+    }
+
+    /**
+     * @param array $node
+     */
+    public function setNode($serverName, $node)
+    {
+        $this->nodes[$serverName] = $node;
+        if ($this->list) {
+            echo $serverName . ' : ' . count($node ?? []) . PHP_EOL;
+        }
     }
 }

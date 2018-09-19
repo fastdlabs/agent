@@ -8,7 +8,9 @@
  * @link      https://fastdlabs.com
  */
 
+use FastD\Sentinel\ConfigCommand;
 use FastD\Sentinel\SentinelCommand;
+use FastD\Sentinel\StopCommand;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -44,7 +46,7 @@ class App extends Application
 {
     public function __construct()
     {
-        parent::__construct('sentinel agent', '1.0.0');
+        parent::__construct(\FastD\Sentinel\Agent::PROCESS_NAME, \FastD\Sentinel\Agent::AGENT_VERSION);
     }
 
     /**
@@ -58,8 +60,6 @@ class App extends Application
         $argv = $_SERVER['argv'];
 
         $script = array_shift($argv);
-
-        array_unshift($argv, SentinelCommand::COMMAND_NAME);
         array_unshift($argv, $script);
 
         return parent::run(new ArgvInput($argv), $output);
@@ -68,6 +68,10 @@ class App extends Application
 
 $app = new App();
 
-$app->add(new SentinelCommand());
+$app->addCommands([
+    new SentinelCommand(),
+    new ConfigCommand(),
+    new StopCommand()
+]);
 
 $app->run();
