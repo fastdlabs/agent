@@ -7,8 +7,10 @@
  * @see      http://www.fastdlabs.com/
  */
 
-namespace FastD\Sentinel;
+namespace FastD\Sentinel\Command;
 
+use FastD\Sentinel\Agent;
+use FastD\Sentinel\SentinelInterface;
 use FastD\Utils\FileObject;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
