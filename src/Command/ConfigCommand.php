@@ -57,12 +57,33 @@ class ConfigCommand extends Command
         }
     }
 
+    /**
+     * @param OutputInterface $output
+     * @param string $info
+     */
     public function lists(OutputInterface $output, $info = 'default')
     {
         if (is_null($info) || 'default' === $info) {
             $this->all($output);
         } else {
             $this->node($output, $info);
+        }
+    }
+
+
+    /**
+     * @param OutputInterface $output
+     * @param $node
+     */
+    public function remove(OutputInterface $output, $node)
+    {
+        if (is_null($node)) {
+            $output->writeln("<info>$node undefined</info>");
+        } elseif (file_exists($file = "{$this->path}/$node.php")) {
+            unlink($file);
+            $output->writeln("<info>unlink succeed</info>");
+        } else {
+            $output->writeln("<info>$node no exists</info>");
         }
     }
 
@@ -100,6 +121,10 @@ class ConfigCommand extends Command
         $table->render();
     }
 
+    /**
+     * @param OutputInterface $output
+     * @param $node
+     */
     public function node(OutputInterface $output, $node)
     {
         $nodes = explode(':', $node);
@@ -129,18 +154,12 @@ class ConfigCommand extends Command
         }
     }
 
-    public function remove(OutputInterface $output, $node)
-    {
-        if (is_null($node)) {
-            $output->writeln("<info>$node undefined</info>");
-        } elseif (file_exists($file = "{$this->path}/$node.php")) {
-            unlink($file);
-            $output->writeln("<info>unlink succeed</info>");
-        } else {
-            $output->writeln("<info>$node no exists</info>");
-        }
-    }
-
+    /**
+     * @param Table $table
+     * @param $nodes
+     * @param $config
+     * @return Table
+     */
     public function getNodeInfo(Table $table, $nodes, $config)
     {
         switch ($config) {
@@ -166,11 +185,9 @@ class ConfigCommand extends Command
                         $node['status']['tasking_num'],
                         $node['status']['request_count'],
                         $node['status']['worker_request_count'],
-
                     ]);
                 }
                 break;
-
         }
 
         return $table;
