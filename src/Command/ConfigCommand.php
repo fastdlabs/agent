@@ -1,5 +1,4 @@
-<?php /** @noinspection ALL */
-
+<?php
 /**
  * @author: ZhaQiu <34485431@qq.com>
  * @time: 2018/9/19
