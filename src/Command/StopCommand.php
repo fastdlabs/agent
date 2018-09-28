@@ -40,7 +40,8 @@ class StopCommand extends Command
             $path = SentinelInterface::PATH;
         }
 
-        $pid = (int)@file_get_contents($path .'/' . Agent::PROCESS_NAME . '.pid');
+        $path .= '/' . Agent::PROCESS_NAME . '.pid';
+        $pid = (int)@file_get_contents($path);
         if (process_kill($pid, SIGTERM)) {
             unlink($path);
         }
