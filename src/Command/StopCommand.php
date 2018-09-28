@@ -6,6 +6,7 @@
 
 namespace FastD\Sentinel\Command;
 
+use FastD\Sentinel\Agent;
 use FastD\Sentinel\SentinelInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -39,7 +40,7 @@ class StopCommand extends Command
             $path = SentinelInterface::PATH;
         }
 
-        $pid = (int)@file_get_contents($path);
+        $pid = (int)@file_get_contents($path .'/' . Agent::PROCESS_NAME . '.pid');
         if (process_kill($pid, SIGTERM)) {
             unlink($path);
         }
