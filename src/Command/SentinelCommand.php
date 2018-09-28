@@ -72,11 +72,15 @@ class SentinelCommand extends Command
         }else{
             $path = SentinelInterface::PATH;
         }
-        $file = new FileObject($path . '/' . Agent::PROCESS_NAME . '.pid', 'rw+');
+        $path = $path . '/' . Agent::PROCESS_NAME . '.pid';
+        $file = new FileObject($path, 'rw+');
         $file->ftruncate(0);
         $file->fwrite($agent->start());
 
-        $agent->wait(function ($ret) use ($output) {
+        $agent->wait(function ($ret) use ($output,$path) {
+            if (file_exists($path)) {
+                @unlink($path);
+            }
             $output->writeln(sprintf('sentinel agent is exists. pid: %s exit. code: %s. signal: %s', $ret['pid'], $ret['code'], $ret['signal']));
         });
     }
