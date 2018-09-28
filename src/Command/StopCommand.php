@@ -44,6 +44,6 @@ class StopCommand extends Command
             unlink($path);
         }
 
-        $output->writeln("<info></info>");
+        $output->writeln("agent<info> [{$pid}] </info>is shutdown");
     }
 }
