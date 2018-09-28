@@ -26,6 +26,9 @@ class SentinelCommand extends Command
 {
     const COMMAND_NAME = 'start';
 
+    protected $path = '/tmp/service/';
+
+
     public function configure()
     {
         $this->setName(static::COMMAND_NAME);
@@ -45,8 +48,49 @@ class SentinelCommand extends Command
     {
         $output->writeln('sentinel agent started');
         self::version($output);
+        $this->setPath($input);
 
-        $this->agent($input, $output);
+        if ($this->isRunning()) {
+            $output->writeln("the agent is running");
+        } else {
+            $this->start($input, $output);
+        }
+    }
+
+    /**
+     * start agent
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
+    public function start(InputInterface $input, OutputInterface $output)
+    {
+        $agent = new Agent($input);
+
+        $file = new FileObject($this->path, 'rw+');
+        $file->ftruncate(0);
+        $file->fwrite($agent->start());
+
+        $agent->wait(function ($ret) use ($output) {
+            if (file_exists($this->path)) {
+                @unlink($this->path);
+            }
+            $output->writeln(sprintf('sentinel agent is exists. pid: %s exit. code: %s. signal: %s', $ret['pid'], $ret['code'], $ret['signal']));
+        });
+    }
+
+    /**
+     * @param string $path
+     */
+    public function setPath(InputInterface $input)
+    {
+        if ($input->hasParameterOption(['--path', '-p'])) {
+            $path = $input->getOption('path');
+        } else {
+            $path = SentinelInterface::PATH;
+        }
+
+        $this->path = $path . '/' . Agent::PROCESS_NAME . '.pid';
     }
 
     /**
@@ -58,30 +102,14 @@ class SentinelCommand extends Command
     }
 
     /**
-     * start agent
-     *
-     * @param InputInterface $input
-     * @param OutputInterface $output
+     * @return bool
      */
-    public function agent(InputInterface $input, OutputInterface $output)
+    public function isRunning()
     {
-        $agent = new Agent($input);
-
-        if ($input->hasParameterOption(['--path', '-p'])) {
-            $path = $input->getOption('path');
-        }else{
-            $path = SentinelInterface::PATH;
+        if (file_exists($this->path)) {
+            return true;
         }
-        $path = $path . '/' . Agent::PROCESS_NAME . '.pid';
-        $file = new FileObject($path, 'rw+');
-        $file->ftruncate(0);
-        $file->fwrite($agent->start());
 
-        $agent->wait(function ($ret) use ($output,$path) {
-            if (file_exists($path)) {
-                @unlink($path);
-            }
-            $output->writeln(sprintf('sentinel agent is exists. pid: %s exit. code: %s. signal: %s', $ret['pid'], $ret['code'], $ret['signal']));
-        });
+        return false;
     }
 }
