@@ -27,8 +27,6 @@ class Agent extends Process
 
     protected $path;
 
-    protected $list = false;
-
     public function __construct(InputInterface $input, $redirect = false, $pipe = true)
     {
         $this->input = $input;
@@ -44,10 +42,6 @@ class Agent extends Process
             $this->url = $input->getArgument('url');
         }
 
-        if ($input->hasParameterOption(['--list', '-l'])) {
-            $this->list = true;
-        }
-
         if ($input->hasParameterOption(['--path', '-p'])) {
             $this->path = $input->getOption('path');
         }
@@ -59,8 +53,17 @@ class Agent extends Process
 
     public function handle(swoole_process $swoole_process)
     {
-        $subscript = new Subscription($this->url, $this->path, $this->list);
+        $subscript = new Subscription($this->url, $this->path);
 
         $subscript->start();
+    }
+
+    public function start()
+    {
+        if (true === $this->daemonize) {
+            $this->process->daemon(false, false);
+        }
+
+        return $this->process->start();
     }
 }

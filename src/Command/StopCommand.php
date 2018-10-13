@@ -41,11 +41,11 @@ class StopCommand extends Command
         }
 
         $path .= '/' . Agent::PROCESS_NAME . '.pid';
-        $pid = (int)@file_get_contents($path);
-        if (process_kill($pid, SIGTERM)) {
+        if (file_exists($path) && $pid = (int)@file_get_contents($path)) {
+            1 < $pid && process_kill(file_get_contents($path), 0) && process_kill($pid, SIGTERM);
             unlink($path);
         }
 
-        $output->writeln("agent<info> [{$pid}] </info>is shutdown");
+        $output->writeln("sentinel agent is shutdown...");
     }
 }

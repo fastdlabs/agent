@@ -51,7 +51,7 @@ class SentinelCommand extends Command
         $this->setPath($input);
 
         if ($this->isRunning()) {
-            $output->writeln("the agent is running");
+            $output->writeln("the agent is already running");
         } else {
             $this->start($input, $output);
         }
@@ -73,7 +73,7 @@ class SentinelCommand extends Command
 
         $agent->wait(function ($ret) use ($output) {
             if (file_exists($this->path)) {
-                @unlink($this->path);
+                unlink($this->path);
             }
             $output->writeln(sprintf('sentinel agent is exists. pid: %s exit. code: %s. signal: %s', $ret['pid'], $ret['code'], $ret['signal']));
         });
@@ -107,7 +107,7 @@ class SentinelCommand extends Command
     public function isRunning()
     {
         if (file_exists($this->path)) {
-            return true;
+            return posix_kill(file_get_contents($this->path), 0);
         }
 
         return false;

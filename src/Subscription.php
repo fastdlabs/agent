@@ -29,17 +29,14 @@ class Subscription extends Client
 
     protected $path;
 
-    protected $list;
-
     /**
      * Subscription constructor.
      * @param $uri
      */
-    public function __construct($uri, $path = null, $list = false)
+    public function __construct($uri, $path = null)
     {
         parent::__construct($uri, true);
 
-        $this->list = $list;
         $this->path = is_null($path) ? SentinelInterface::PATH : $path;
     }
 
@@ -71,7 +68,7 @@ class Subscription extends Client
 
         if (!empty($data)) {
             foreach ($data as $name => $nodes) {
-                echo $name, PHP_EOL, PHP_EOL;
+                echo $name,  PHP_EOL;
                 if (empty($nodes)) {
                     try {
                         unlink($this->path . '/' . $name . '.php');
@@ -153,8 +150,5 @@ class Subscription extends Client
     public function setNode($serverName, $node)
     {
         $this->nodes[$serverName] = $node;
-        if ($this->list) {
-            echo $serverName . ' : ' . count($node ?? []) . PHP_EOL;
-        }
     }
 }
